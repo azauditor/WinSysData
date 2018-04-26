@@ -15,7 +15,7 @@ This PowerShell script is designed to collect data about individual Windows Syst
 
 ## Use
 
-1. Download the [Get-WindowsSystemData.ps1](https://github.com/aentringer/WinSysData/Get-WindowsSystemData.ps1) script from this repository.
+1. Download the [Get-WindowsSystemData.ps1](https://github.com/aentringer/WinSysData/raw/master/Get-WindowsSystemData.ps1) script from this repository.
 1. Copy the .ps1 script file to the system being audited
     * *You may also run the script via PowerShell remoting (Invoke-Command), but that is beyond the scope of this README.*
 1. Open PowerShell Console (if admin privileges are available, run PowerShell as admin)
