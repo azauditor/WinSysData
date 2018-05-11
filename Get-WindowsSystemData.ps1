@@ -577,11 +577,24 @@ Write-Output "Exporting RDP Information - $(Get-Date -Format 'yyyy-MM-dd HH:mm:s
 Write-Output ("="*80) | Out-File "$ScriptDir\$ComputerName\$ComputerName-sysinfo.txt" -Append -NoClobber -Encoding utf8
 Write-Output "RDP Information" | Out-File "$ScriptDir\$ComputerName\$ComputerName-sysinfo.txt" -Append -NoClobber -Encoding utf8
 Write-Output ("="*80) | Out-File "$ScriptDir\$ComputerName\$ComputerName-sysinfo.txt" -Append -NoClobber -Encoding utf8
-if (((Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server' -Name 'fDenyTSConnections').fDenyTSConnections) -eq 1) {
-    Write-Output 'Remote Desktop is disabled in registry' | Out-File "$ScriptDir\$ComputerName\$ComputerName-sysinfo.txt" -Append -NoClobber -Encoding utf8
+
+$rdpGPO = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services' -Name 'fDenyTSConnections' -ErrorAction SilentlyContinue)
+if ($rdpGPO) {
+    if ($rdpGPO.fDenyTSConnections -eq 1) {
+        Write-Output 'Remote Desktop is disabled by Group Policy' | Out-File "$ScriptDir\$ComputerName\$ComputerName-sysinfo.txt" -Append -NoClobber -Encoding utf8
+    }
+    elseif ($rdpGPO.fDenyTSConnections -eq 0) {
+        Write-Output 'Remote Desktop is enabled by Group Policy' | Out-File "$ScriptDir\$ComputerName\$ComputerName-sysinfo.txt" -Append -NoClobber -Encoding utf8
+    }
 }
 else {
-    Write-Output 'Remote Desktop is enabled in registry' | Out-File "$ScriptDir\$ComputerName\$ComputerName-sysinfo.txt" -Append -NoClobber -Encoding utf8
+    Write-Output 'Remote Desktop is not configured by Group Policy' | Out-File "$ScriptDir\$ComputerName\$ComputerName-sysinfo.txt" -Append -NoClobber -Encoding utf8
+    if (((Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server' -Name 'fDenyTSConnections').fDenyTSConnections) -eq 1) {
+        Write-Output 'Remote Desktop is disabled in registry' | Out-File "$ScriptDir\$ComputerName\$ComputerName-sysinfo.txt" -Append -NoClobber -Encoding utf8
+    }
+    else {
+        Write-Output 'Remote Desktop is enabled in registry' | Out-File "$ScriptDir\$ComputerName\$ComputerName-sysinfo.txt" -Append -NoClobber -Encoding utf8
+    }
 }
 #endregion
 
