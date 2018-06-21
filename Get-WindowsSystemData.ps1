@@ -38,6 +38,7 @@ Function Get-SharePermission($ShareName) {
                    Alex Entringer 2/16/2015 + Permit the omission of the parameter to
                                             scan local machine only
                    Phil Hanus 6/21/2018 + Modified check groups regiion to work with PS v2.0+
+                   Phil Hanus 6/21/2018 + Modified OS Version check to work with PS v2.0+ 
     #>
     $Share = Get-WmiObject Win32_LogicalShareSecuritySetting -Filter "name='$ShareName'"
     if ($Share) {
@@ -608,7 +609,7 @@ if (-not (Test-Path "$ScriptDir\$ComputerName\Firewall")) {
 Get-FirewallRule -Local -GPO | ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
     Out-File -FilePath "$ScriptDir\$ComputerName\Firewall\$ComputerName-FirewallRules-Registry.csv" -Encoding utf8 -Append
 
-if ([version](Get-CimInstance -ClassName Win32_OperatingSystem -Property Version).Version -ge [version]'6.2.9200') {
+if ([version]((Get-WmiObject -Class Win32_OperatingSystem -Property Version) | ForEach-Object -MemberName Version) -ge [version]'6.2.9200') {
     Get-NetFirewallRule -All -PolicyStore ActiveStore | Select-Object Name,DisplayName,InstanceID,Enabled,Profile,
         Direction,Action,EdgeTraversalPolicy,PolicyStoreSourceType,Description,DisplayGroup,Owner,
         @{Name='Platform';Expression={$_.Platform -join ', '}},
