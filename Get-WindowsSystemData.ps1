@@ -37,6 +37,7 @@ Function Get-SharePermission($ShareName) {
                                             servers, Timestamp to result
                    Alex Entringer 2/16/2015 + Permit the omission of the parameter to
                                             scan local machine only
+                   Phil Hanus 6/21/2018 + Modified check groups regiion to work with PS v2.0+
     #>
     $Share = Get-WmiObject Win32_LogicalShareSecuritySetting -Filter "name='$ShareName'"
     if ($Share) {
@@ -443,9 +444,9 @@ $GroupList = Get-WmiObject -Class Win32_Group -Filter "Domain='$ComputerName'"
 $GroupList | ForEach-Object {
     $CurrGroup = Get-WmiObject -Query "SELECT * FROM Win32_GroupUser WHERE GroupComponent=`"Win32_Group.Domain='$ComputerName',Name='$($_.Name)'`""
     ForEach ($item in $CurrGroup) {
-        $UserName = $item.PartComponent.split('=')[2] -replace '"', ''
-        $Domain = $item.PartComponent.split('=')[1].split(',')[0] -replace '"', ''
-        $UserType = $item.PartComponent.split(':')[1].split('.')[0].split('_')[1]
+        $UserName = ($item | ForEach-Object -MemberName PartComponent).split('=')[2] -replace '"', ''
+        $Domain = ($item | ForEach-Object -MemberName PartComponent).split('=')[1].split(',')[0] -replace '"', ''
+        $UserType = ($item | ForEach-Object -MemberName PartComponent).split(':')[1].split('.')[0].split('_')[1]
         New-Object -TypeName PSObject -Property @{
             'Name'          = "$Domain\$UserName"
             'ObjectClass'  = $UserType
