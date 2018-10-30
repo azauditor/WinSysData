@@ -446,22 +446,35 @@ $AllLocalAccounts | ForEach-Object {
 #region Check Groups
 Write-Output "Exporting Group List - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 
-$GroupList = Get-WmiObject -Class Win32_Group -Filter "Domain='$ComputerName'"
 $GroupList | ForEach-Object {
     $CurrGroup = Get-WmiObject -Query "SELECT * FROM Win32_GroupUser WHERE GroupComponent=`"Win32_Group.Domain='$ComputerName',Name='$($_.Name)'`""
     ForEach ($item in $CurrGroup) {
-        $UserName = ($item | ForEach-Object -MemberName PartComponent).split('=')[2] -replace '"', ''
-        $Domain = ($item | ForEach-Object -MemberName PartComponent).split('=')[1].split(',')[0] -replace '"', ''
-        $UserType = ($item | ForEach-Object -MemberName PartComponent).split(':')[1].split('.')[0].split('_')[1]
+        $currentPart = $item.PartComponent
+        if ($currentPart) {
+            $UserName = $currentPart.split('=')[2] -replace '"', ''
+            $Domain = $currentPart.split('=')[1].split(',')[0] -replace '"', ''
+            $UserType = $currentPart.split(':')[1].split('.')[0].split('_')[1]
+            $comboName = "$Domain\$UserName"
+        }
+        else {
+            $UserName = $null
+            $Domain = $null
+            $UserType = $null
+            $comboName = $null
+        }
         New-Object -TypeName PSObject -Property @{
-            'Name'          = "$Domain\$UserName"
-            'ObjectClass'  = $UserType
+            'Name'          = $comboName
+            'ObjectClass'   = $UserType
             'Group'         = $_.Name
+            'GroupSID'      = $_.SID
             'Computer'      = $ComputerName
         }
+       $UserName = $null
+       $Domain = $null
+       $UserType = $null
     }
 } | Select-Object 'Name','ObjectClass','Group','Computer' | ConvertTo-Csv -NoTypeInformation -Delimiter '|' |
-    ForEach-Object { $_ -replace '"', ''} | Out-File -FilePath "$Path\$ComputerName\$ComputerName-Groups.csv" -Append
+    ForEach-Object { $_ -replace '"', '' } | Out-File -FilePath "$Path\$ComputerName\$ComputerName-Groups.csv" -Append
 #endregion Check Groups
 
 #region Check Services
@@ -499,6 +512,14 @@ Get-WindowsUpdate
 Write-Output "Exporting Share Permissions - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 Get-ShareReport
 #endregion Check Shares
+
+#region Check PowerShell Version
+Write-Output "Exporting System Information - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -NoClobber -Encoding utf8
+Write-Output "Computer System Information" | Out-File "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -NoClobber -Encoding utf8
+Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -NoClobber -Encoding utf8
+$PSVersionTable | Out-File "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -NoClobber -Encoding utf8
+#endregion Check PowerShell Version
 
 #region Check System Information
 Write-Output "Exporting System Information - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
