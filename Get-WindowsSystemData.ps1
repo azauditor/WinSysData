@@ -446,6 +446,7 @@ $AllLocalAccounts | ForEach-Object {
 #region Check Groups
 Write-Output "Exporting Group List - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 
+$GroupList = Get-WmiObject -Class Win32_Group -Filter "Domain='$ComputerName'"
 $GroupList | ForEach-Object {
     $CurrGroup = Get-WmiObject -Query "SELECT * FROM Win32_GroupUser WHERE GroupComponent=`"Win32_Group.Domain='$ComputerName',Name='$($_.Name)'`""
     ForEach ($item in $CurrGroup) {
