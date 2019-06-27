@@ -551,10 +551,10 @@ Get-ShareReport
 
 #region Check PowerShell Version
 Write-Output "Exporting PowerShell Version Information - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -Encoding utf8
-Write-Output "PowerShell Version Information" | Out-File "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -Encoding utf8
-Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -Encoding utf8
-$PSVersionTable | Out-File "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -Encoding utf8
+Write-Output "PowerShell Version Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -Encoding utf8
+$PSVersionTable | Out-File -FilePath "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -Encoding utf8
 
 if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-PSInfo.txt" -PathType Leaf)){
     Write-Error -Message 'PowerShell Version Export Failed. Output file not found.'
@@ -563,13 +563,13 @@ if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-PSInfo.txt" -PathTy
 
 #region Check System Information
 Write-Output "Exporting System Information - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output "Computer System Information" | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output "Computer System Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
 Get-WmiObject -Class Win32_ComputerSystem | Select-Object Name, Model,
     Manufacturer, Description, DNSHostName, Domain, DomainRole, PartOfDomain,
     NumberOfProcessors, SystemType, TotalPhysicalMemory, UserName, Workgroup |
-    Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+    Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
 
 if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType Leaf)){
     Write-Error -Message 'System Information Export Failed. Output file not found.'
@@ -578,14 +578,14 @@ if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathT
 
 #region Get OperatingSystem info
 Write-Output "Exporting Operating System Information - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output "Operating System Information" | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output "Operating System Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
 Get-WmiObject -Class Win32_OperatingSystem | Select-Object Name, Version, FreePhysicalMemory,
     OSLanguage, OSProductSuite, OSType, OSArchitecture, BuildNumber, Caption, InstallDate,
     LastBootUpTime, LocalDateTime, SystemDrive, WindowsDirectory, SystemDirectory,
     ServicePackMajorVersion, ServicePackMinorVersion, RegisteredUser |
-    Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+    Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
 
 if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType Leaf)){
     Write-Error -Message 'System Information Export Failed. Output file not found.'
@@ -594,13 +594,13 @@ if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathT
 
 #region Get Network Login info
 Write-Output "Exporting Network Login Information - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output "Network Login Information" | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output "Network Login Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
 Get-WmiObject -Class Win32_NetworkLoginProfile | Select-Object PSComputerName, Name, Caption,
     Description, FullName, HomeDirectory, HomeDirectoryDrive, LastLogon, LogonHours,
     LogonServer, PasswordExpires, PrimaryGroupID, UserType |
-    Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+    Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
 
 if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType Leaf)){
     Write-Error -Message 'Network Login Export Failed. Output file not found.'
@@ -609,9 +609,9 @@ if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathT
 
 #region Get Network Connections info
 Write-Output "Exporting Network Adapter Information - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output "Network Connections Information" | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output "Network Connections Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
 $networkadapter = Get-WmiObject -Class Win32_NetworkAdapter | Select-Object PSComputerName,
     Availability, Name, AdapterType, Description, Installed, MACAddress, Manufacturer,
     NetConnectionID, @{Name='NetConnectionStatus';Expression={(ConvertFrom-NetStatus($_.NetConnectionStatus))}}, NetEnabled, PhysicalAdapter,
@@ -626,7 +626,7 @@ $na = $networkadapter.getenumerator()
 $nc = $networkconfig.getenumerator()
 
 while($na.MoveNext() -and $nc.MoveNext()){
-    Write-Output $na.current $nc.current | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+    Write-Output $na.current $nc.current | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
 }
 
 if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType Leaf)){
@@ -644,11 +644,11 @@ if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-Netstat.csv" -PathT
 
 #region Get PhysicalMemory info
 Write-Output "Exporting Memory Information - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output "Memory Information" | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output "Memory Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
 Get-WmiObject -Class Win32_PhysicalMemory | Select-Object Name, Capacity, DeviceLocator, Tag |
-    Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+    Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
 
 if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType Leaf)){
     Write-Error -Message 'Memory Information Export Failed. Output file not found.'
@@ -657,11 +657,11 @@ if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathT
 
 #region Get LogicalDisk info
 Write-Output "Exporting Logical Disk Information - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output "Logical Disk Information" | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output "Logical Disk Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
 Get-WmiObject -Class Win32_LogicalDisk | Select-Object Name, ProviderName, Description, FreeSpace, Size |
-    Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+    Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
 
 if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType Leaf)){
     Write-Error -Message 'Logical Disk Information Export Failed. Output file not found.'
@@ -670,26 +670,26 @@ if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathT
 
 #region Get Remote Desktop Status
 Write-Output "Exporting RDP Information - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output "RDP Information" | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output "RDP Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
 
 $rdpGPO = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services' -Name 'fDenyTSConnections' -ErrorAction SilentlyContinue)
 if ($rdpGPO) {
     if ($rdpGPO.fDenyTSConnections -eq 1) {
-        Write-Output 'Remote Desktop is disabled by Group Policy' | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+        Write-Output 'Remote Desktop is disabled by Group Policy' | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
     }
     elseif ($rdpGPO.fDenyTSConnections -eq 0) {
-        Write-Output 'Remote Desktop is enabled by Group Policy' | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+        Write-Output 'Remote Desktop is enabled by Group Policy' | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
     }
 }
 else {
-    Write-Output 'Remote Desktop is not configured by Group Policy' | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+    Write-Output 'Remote Desktop is not configured by Group Policy' | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
     if (((Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server' -Name 'fDenyTSConnections').fDenyTSConnections) -eq 1) {
-        Write-Output 'Remote Desktop is disabled in registry' | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+        Write-Output 'Remote Desktop is disabled in registry' | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
     }
     else {
-        Write-Output 'Remote Desktop is enabled in registry' | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+        Write-Output 'Remote Desktop is enabled in registry' | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
     }
 }
 if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType Leaf)){
