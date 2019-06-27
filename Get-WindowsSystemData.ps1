@@ -710,7 +710,7 @@ if (-not (Test-Path -Path "$Path\$ComputerName\Firewall\$ComputerName-FirewallRu
     Write-Error -Message 'Firewall Registry Information Export Failed. Output file not found.'
 }
 
-if ([version]((Get-WmiObject -Class Win32_OperatingSystem -Property Version) | Select-Object -ExpandProperty Version) -ge [version]'6.2.9200') {
+if ([version]((Get-WmiObject -Class Win32_OperatingSystem -Property Version -ErrorAction SilentlyContinue) | Select-Object -ExpandProperty Version) -ge [version]'6.2.9200') {
     Get-NetFirewallRule -All -PolicyStore ActiveStore | Select-Object Name,DisplayName,InstanceID,Enabled,Profile,
         Direction,Action,EdgeTraversalPolicy,PolicyStoreSourceType,Description,DisplayGroup,Owner,
         @{Name='Platform';Expression={$_.Platform -join ', '}},
