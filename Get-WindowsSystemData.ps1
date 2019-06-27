@@ -515,9 +515,9 @@ Get-ShareReport
 #endregion Check Shares
 
 #region Check PowerShell Version
-Write-Output "Exporting System Information - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+Write-Output "Exporting PowerShell Version Information - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -NoClobber -Encoding utf8
-Write-Output "Computer System Information" | Out-File "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -NoClobber -Encoding utf8
+Write-Output "PowerShell Version Information" | Out-File "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -NoClobber -Encoding utf8
 Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -NoClobber -Encoding utf8
 $PSVersionTable | Out-File "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -NoClobber -Encoding utf8
 #endregion Check PowerShell Version
