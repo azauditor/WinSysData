@@ -136,6 +136,10 @@ function Get-ShareReport {
     $z = $z + "</table></body></html>"
     $OutFileName = $ComputerName + "-ShareReport.html"
     Out-File -FilePath "$Path\$ComputerName\$OutFileName" -InputObject $z -Encoding ASCII
+
+    if (-not (Test-Path -Path "$Path\$ComputerName\$OutFileName" -PathType Leaf)){
+        Write-Error -Message 'Share Permissions Export Failed. Output file not found.'
+    }
 } # End Get-ShareReport Function
 
 function Get-WindowsUpdate {
@@ -188,6 +192,10 @@ function Get-WindowsUpdate {
     } | Sort-Object Date | Select-Object KB,Date,Title,ClientApplicationID,Description,SupportURL |
     ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
     Out-File -FilePath "$Path\$ComputerName\$ComputerName-Updates.csv" -Append
+
+    if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-Updates.csv" -PathType Leaf)){
+        Write-Error -Message 'Windows Update Export Failed. Output file not found.'
+    }
 } # End Get-WindowsUpdate Function
 
 function ConvertFrom-NetStatus {
@@ -441,6 +449,10 @@ $AllLocalAccounts | ForEach-Object {
 } | Select-Object 'Name','Full Name','Disabled','Description','Status','LockOut','Password Expires','Password Last Set','Password Expiry Date',
     'Password Required','Account Type','Domain','Password Age' | ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
     Out-File -FilePath "$Path\$ComputerName\$ComputerName-Users.csv" -Append
+
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-Users.csv" -PathType Leaf)){
+    Write-Error -Message 'User List Export Failed. Output file not found.'
+}
 #endregion Check Users
 
 #region Check Groups
@@ -476,6 +488,10 @@ $GroupList | ForEach-Object {
     }
 } | Select-Object 'Name','ObjectClass','Group','Computer' | ConvertTo-Csv -NoTypeInformation -Delimiter '|' |
     ForEach-Object { $_ -replace '"', '' } | Out-File -FilePath "$Path\$ComputerName\$ComputerName-Groups.csv" -Append
+
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-Groups.csv" -PathType Leaf)){
+    Write-Error -Message 'Group List Failed. Output file not found.'
+}
 #endregion Check Groups
 
 #region Check Services
@@ -484,6 +500,10 @@ Get-WmiObject -Class Win32_Service | Select-Object PSComputerName,Name, Caption,
     ServiceType, StartMode,State, StartName, Status, AcceptPause, AcceptStop, PathName |
     Sort-Object State, DisplayName | ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
     Out-File -FilePath "$Path\$ComputerName\$ComputerName-Services.csv" -Append
+
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-Services.csv" -PathType Leaf)){
+    Write-Error -Message 'Services Export Failed. Output file not found.'
+}
 #endregion Check Services
 
 #region Check Running Processes
@@ -491,6 +511,10 @@ Write-Output "Exporting Running Processes - $(Get-Date -Format 'yyyy-MM-dd HH:mm
 Get-WmiObject -Class Win32_Process | Select-Object Name,ProcessId,ExecutablePath,Description,CommandLine |
     ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
     Out-File -FilePath "$Path\$ComputerName\$ComputerName-processes.csv" -Append
+
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-processes.csv" -PathType Leaf)){
+    Write-Error -Message 'Running Processes Export Failed. Output file not found.'
+}
 #endregion Check Running Processes
 
 #region Check for installed software at system level
@@ -502,6 +526,10 @@ $SoftwareList | Select-Object PSChildName,DisplayName,Publisher,DisplayVersion,U
     Sort-Object DisplayName | ConvertTo-Csv -NoTypeInformation -Delimiter '|' |
     ForEach-Object { $_ -replace '"', ''} |
     Out-File -FilePath "$Path\$ComputerName\$ComputerName-InstalledSoftware.csv" -Append
+
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-InstalledSoftware.csv" -PathType Leaf)){
+    Write-Error -Message 'Installed Software Export Failed. Output file not found.'
+}
 #endregion Check for installed software at system level
 
 #region Check Microsoft Update
@@ -520,6 +548,10 @@ Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-PSInfo.txt" 
 Write-Output "PowerShell Version Information" | Out-File "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -NoClobber -Encoding utf8
 Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -NoClobber -Encoding utf8
 $PSVersionTable | Out-File "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -NoClobber -Encoding utf8
+
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-PSInfo.txt" -PathType Leaf)){
+    Write-Error -Message 'PowerShell Version Export Failed. Output file not found.'
+}
 #endregion Check PowerShell Version
 
 #region Check System Information
@@ -531,6 +563,10 @@ Get-WmiObject -Class Win32_ComputerSystem | Select-Object Name, Model,
     Manufacturer, Description, DNSHostName, Domain, DomainRole, PartOfDomain,
     NumberOfProcessors, SystemType, TotalPhysicalMemory, UserName, Workgroup |
     Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -NoClobber -Encoding utf8
+
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType Leaf)){
+    Write-Error -Message 'System Information Export Failed. Output file not found.'
+}
 #endregion Check System Information
 
 #region Get OperatingSystem info
@@ -543,6 +579,10 @@ Get-WmiObject -Class Win32_OperatingSystem | Select-Object Name, Version, FreePh
     LastBootUpTime, LocalDateTime, SystemDrive, WindowsDirectory, SystemDirectory,
     ServicePackMajorVersion, ServicePackMinorVersion, RegisteredUser |
     Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType Leaf)){
+    Write-Error -Message 'System Information Export Failed. Output file not found.'
+}
 #endregion Get OperatingSystem info
 
 #region Get Network Login info
@@ -554,6 +594,10 @@ Get-WmiObject -Class Win32_NetworkLoginProfile | Select-Object PSComputerName, N
     Description, FullName, HomeDirectory, HomeDirectoryDrive, LastLogon, LogonHours,
     LogonServer, PasswordExpires, PrimaryGroupID, UserType |
     Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -NoClobber -Encoding utf8
+
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType Leaf)){
+    Write-Error -Message 'Network Login Export Failed. Output file not found.'
+}
 #endregion Get Network Login info
 
 #region Get Network Connections info
@@ -578,9 +622,17 @@ while($na.MoveNext() -and $nc.MoveNext()){
     Write-Output $na.current $nc.current | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -NoClobber -Encoding utf8
 }
 
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType Leaf)){
+    Write-Error -Message 'Network Connections Export Failed. Output file not found.'
+}
+
 Write-Output "Exporting Open TCP/UDP Connections - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 Get-Netstat | ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
     Out-File -FilePath "$Path\$ComputerName\$ComputerName-Netstat.csv" -Append
+
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-Netstat.csv" -PathType Leaf)){
+    Write-Error -Message 'Netstat Export Failed. Output file not found.'
+}
 #endregion Get Network Connections info
 
 #region Get PhysicalMemory info
@@ -590,6 +642,10 @@ Write-Output "Memory Information" | Out-File "$Path\$ComputerName\$ComputerName-
 Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -NoClobber -Encoding utf8
 Get-WmiObject -Class Win32_PhysicalMemory | Select-Object Name, Capacity, DeviceLocator, Tag |
     Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -NoClobber -Encoding utf8
+
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType Leaf)){
+    Write-Error -Message 'Memory Information Export Failed. Output file not found.'
+}
 #endregion Get PhysicalMemory info
 
 #region Get LogicalDisk info
@@ -599,6 +655,10 @@ Write-Output "Logical Disk Information" | Out-File "$Path\$ComputerName\$Compute
 Write-Output ("="*80) | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -NoClobber -Encoding utf8
 Get-WmiObject -Class Win32_LogicalDisk | Select-Object Name, ProviderName, Description, FreeSpace, Size |
     Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -NoClobber -Encoding utf8
+
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType Leaf)){
+    Write-Error -Message 'Logical Disk Information Export Failed. Output file not found.'
+}
 #endregion Get LogicalDisk info
 
 #region Get Remote Desktop Status
@@ -625,6 +685,9 @@ else {
         Write-Output 'Remote Desktop is enabled in registry' | Out-File "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -NoClobber -Encoding utf8
     }
 }
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType Leaf)){
+    Write-Error -Message 'RDP Information Export Failed. Output file not found.'
+}
 #endregion
 
 #region Get Firewall Settings
@@ -635,6 +698,10 @@ if (-not (Test-Path "$Path\$ComputerName\Firewall")) {
 
 Get-FirewallRule -Local -GPO | ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
     Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallRules-Registry.csv" -Encoding utf8 -Append
+
+if (-not (Test-Path -Path "$Path\$ComputerName\Firewall\$ComputerName-FirewallRules-Registry.csv" -PathType Leaf)){
+    Write-Error -Message 'Firewall Registry Information Export Failed. Output file not found.'
+}
 
 if ([version]((Get-WmiObject -Class Win32_OperatingSystem -Property Version) | Select-Object -ExpandProperty Version) -ge [version]'6.2.9200') {
     Get-NetFirewallRule -All -PolicyStore ActiveStore | Select-Object Name,DisplayName,InstanceID,Enabled,Profile,
