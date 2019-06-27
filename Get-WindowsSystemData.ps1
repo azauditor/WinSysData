@@ -12,7 +12,7 @@ PS C:\> Powershell.exe -ExecutionPolicy Bypass .\Get-WindowsSystemData.ps1
 param (
     [Parameter(Position=0, ValueFromPipeline=$true)]
     [ValidateScript({Test-Path $_ -PathType 'Container'})]
-    $Path = "$env:USERPROFILE\Desktop"
+    $Path
 )
 
 Function Export-SecurityPolicy {
@@ -377,6 +377,13 @@ function Get-FirewallRule {
 } # End Get-FirewallRule function
 
 $ComputerName = $env:COMPUTERNAME
+
+if (-not $Path) {
+    if (-not $PSScriptRoot) { 
+        $PSScriptRoot = Split-Path $MyInvocation.MyCommand.Path -Parent
+    }
+    $Path = $PSScriptRoot
+}
 
 #region Check Administrator Privileges
 $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
