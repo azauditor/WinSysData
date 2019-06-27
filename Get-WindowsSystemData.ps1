@@ -8,7 +8,7 @@ relevant information for auditing purposes.
 Single Machine Audit
 PS C:\> Powershell.exe -ExecutionPolicy Bypass .\Get-WindowsSystemData.ps1
 #>
-
+[CmdletBinding()]
 param (
     [Parameter(Position=0, ValueFromPipeline=$true)]
     [ValidateScript({Test-Path $_ -PathType 'Container'})]
