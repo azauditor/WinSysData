@@ -18,9 +18,9 @@ param (
 Function Export-SecurityPolicy {
     $secpol = "$Path\$ComputerName\$ComputerName-secpol.inf"
     $gpo = "$Path\$ComputerName\$ComputerName-GPO.html"
-    Write-Output "Exporting SecEdit Policy"
+    Write-Output "Exporting SecEdit Policy - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
     Start-Process secedit -ArgumentList "/export /cfg `"$secpol`"" -WindowStyle Hidden -Wait
-    Write-Output "Exporting Group Policy Resultant Set of Policy (RSOP)"
+    Write-Output "Exporting Group Policy Resultant Set of Policy (RSOP) - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
     Start-Process gpresult -ArgumentList "/H `"$gpo`"" -WindowStyle Hidden -Wait
     Start-Sleep -s 1
 }
