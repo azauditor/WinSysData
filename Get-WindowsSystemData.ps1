@@ -636,7 +636,7 @@ if (-not (Test-Path "$Path\$ComputerName\Firewall")) {
 Get-FirewallRule -Local -GPO | ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
     Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallRules-Registry.csv" -Encoding utf8 -Append
 
-if ([version]((Get-WmiObject -Class Win32_OperatingSystem -Property Version) | ForEach-Object -MemberName Version) -ge [version]'6.2.9200') {
+if ([version]((Get-WmiObject -Class Win32_OperatingSystem -Property Version) | Select-Object -ExpandProperty Version) -ge [version]'6.2.9200') {
     Get-NetFirewallRule -All -PolicyStore ActiveStore | Select-Object Name,DisplayName,InstanceID,Enabled,Profile,
         Direction,Action,EdgeTraversalPolicy,PolicyStoreSourceType,Description,DisplayGroup,Owner,
         @{Name='Platform';Expression={$_.Platform -join ', '}},
