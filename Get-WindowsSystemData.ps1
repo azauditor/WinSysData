@@ -45,7 +45,7 @@ Function Get-SharePermission($ShareName) {
                    Alex Entringer 2/16/2015 + Permit the omission of the parameter to
                                             scan local machine only
                    Phil Hanus 6/21/2018 + Modified check groups regiion to work with PS v2.0+
-                   Phil Hanus 6/21/2018 + Modified OS Version check to work with PS v2.0+ 
+                   Phil Hanus 6/21/2018 + Modified OS Version check to work with PS v2.0+
     #>
     $Share = Get-WmiObject Win32_LogicalShareSecuritySetting -Filter "name='$ShareName'"
     if ($Share) {
@@ -245,20 +245,20 @@ Function Get-Netstat
 } #End Get-Netstat Function
 
 function Get-FirewallRule {
-    <#   
-    .SYNOPSIS   
+    <#
+    .SYNOPSIS
         Script to read firewall rules and output as an array of objects.
-        
-    .DESCRIPTION 
+
+    .DESCRIPTION
         This script will gather the Windows Firewall rules from the registry and convert the information stored in the registry keys to PowerShell Custom Objects to enable easier manipulation and filtering based on this data.
-        
+
     .PARAMETER Local
         By setting this switch the script will display only the local firewall rules
 
     .PARAMETER GPO
         By setting this switch the script will display only the firewall rules as set by group policy
 
-    .NOTES   
+    .NOTES
         Name: Get-FireWallRules.ps1
         Author: Jaap Brasser
         DateUpdated: 2013-01-10
@@ -267,25 +267,25 @@ function Get-FirewallRule {
     .LINK
     http://www.jaapbrasser.com
 
-    .EXAMPLE   
+    .EXAMPLE
         .\Get-FireWallRules.ps1
 
-    Description 
-    -----------     
+    Description
+    -----------
     The script will output all the local firewall rules
 
-    .EXAMPLE   
+    .EXAMPLE
         .\Get-FireWallRules.ps1 -GPO
 
-    Description 
-    -----------     
+    Description
+    -----------
     The script will output all the firewall rules defined by group policies
 
-    .EXAMPLE   
+    .EXAMPLE
         .\Get-FireWallRules.ps1 -GPO -Local
 
-    Description 
-    -----------     
+    Description
+    -----------
     The script will output all the firewall rules defined by group policies as well as the local firewall rules
     #>
     param(
@@ -307,7 +307,7 @@ function Get-FirewallRule {
             (Get-ItemProperty -Path $Key).PSObject.Members |
             Where-Object {(@('PSPath','PSParentPath','PSChildName') -notcontains $_.Name) -and ($_.MemberType -eq 'NoteProperty') -and ($_.TypeNameOfValue -eq 'System.String')} |
             ForEach-Object {
-            
+
                 # Prepare hashtable
                 $HashProps = @{
                     NameOfRule = $_.Name
@@ -379,7 +379,7 @@ function Get-FirewallRule {
 $ComputerName = $env:COMPUTERNAME
 
 if (-not $Path) {
-    if (-not $PSScriptRoot) { 
+    if (-not $PSScriptRoot) {
         $PSScriptRoot = Split-Path $MyInvocation.MyCommand.Path -Parent
     }
     $Path = $PSScriptRoot
@@ -391,21 +391,9 @@ if ($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administ
     $isAdmin = $true
 }
 else {
-    $message = "Administrator privileges not provided.";
-    $caption = "Do you wish to proceed?";
-    $chooseYes = new-Object System.Management.Automation.Host.ChoiceDescription "&Yes","Yes, Proceed";
-    $chooseNo = new-Object System.Management.Automation.Host.ChoiceDescription "&No","No, Do Not Proceed";
-    $choices = [System.Management.Automation.Host.ChoiceDescription[]]($chooseNo,$chooseYes);
-    $answer = $host.ui.PromptForChoice($caption,$message,$choices,0)
-
-    switch ($answer){
-        0 {
-            Exit
-        }
-        1 {
-            Write-Output "Proceeding with script."
-        }
-    }
+    Write-Error -Message 'Administrator privileges are required to run this script.'
+    Read-Host -Prompt 'Press any key to exit'
+    exit 1
 }
 #endregion Check Administrator Privileges
 
@@ -730,7 +718,7 @@ if ([version]((Get-WmiObject -Class Win32_OperatingSystem -Property Version -Err
         ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
         Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallAppFilter.csv" -Encoding utf8 -Append
 
-    Get-NetFirewallSecurityFilter -All -PolicyStore ActiveStore | 
+    Get-NetFirewallSecurityFilter -All -PolicyStore ActiveStore |
         Select-Object InstanceID,Authentication,Encryption,LocalUser,RemoteUser,RemoteMachine |
         ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
         Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallSecurityFilter.csv" -Encoding utf8 -Append
@@ -748,7 +736,7 @@ if ([version]((Get-WmiObject -Class Win32_OperatingSystem -Property Version -Err
             Select-Object InstanceID,LocalAddress,LocalIP,RemoteAddress,RemoteIP |
             ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
             Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallAddressFilters.csv" -Encoding utf8 -Append
-        
+
         Get-NetFirewallInterfaceFilter -All -PolicyStore ActiveStore | Select-Object InstanceID,InterfaceAlias |
             ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
             Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallInterfaceFilters.csv" -Encoding utf8 -Append
