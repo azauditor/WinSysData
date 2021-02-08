@@ -15,17 +15,17 @@ param (
     $Path
 )
 
-Function Export-SecurityPolicy {
-    $secpol = "$Path\$ComputerName\$ComputerName-secpol.inf"
-    $gpo = "$Path\$ComputerName\$ComputerName-GPO.html"
+function Export-SecurityPolicy {
+    $SecPol = "$Path\$ComputerName\$ComputerName-secpol.inf"
+    $Gpo = "$Path\$ComputerName\$ComputerName-GPO.html"
     Write-Output "Exporting SecEdit Policy - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-    Start-Process secedit -ArgumentList "/export /cfg `"$secpol`"" -WindowStyle Hidden -Wait
+    Start-Process -FilePath secedit.exe -ArgumentList "/export /cfg `"$SecPol`"" -WindowStyle Hidden -Wait
     Write-Output "Exporting Group Policy Resultant Set of Policy (RSOP) - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-    Start-Process gpresult -ArgumentList "/H `"$gpo`"" -WindowStyle Hidden -Wait
+    Start-Process -FilePath gpresult.exe -ArgumentList "/H `"$Gpo`"" -WindowStyle Hidden -Wait
     Start-Sleep -s 1
 }
 
-Function Get-SharePermission($ShareName) {
+function Get-SharePermission ($ShareName) {
     <#
     .SYNOPSIS
     Use this script to export security settings of each share, including both share
@@ -47,17 +47,17 @@ Function Get-SharePermission($ShareName) {
                    Phil Hanus 6/21/2018 + Modified check groups regiion to work with PS v2.0+
                    Phil Hanus 6/21/2018 + Modified OS Version check to work with PS v2.0+
     #>
-    $Share = Get-WmiObject Win32_LogicalShareSecuritySetting -Filter "name='$ShareName'"
+    $Share = Get-WmiObject -Class Win32_LogicalShareSecuritySetting -Filter "name='$ShareName'"
     if ($Share) {
-        $obj = @()
+        $Obj = @()
         $ACLS = $Share.GetSecurityDescriptor().Descriptor.DACL
-        foreach($ACL in $ACLS) {
+        foreach ($ACL in $ACLS) {
             $User = $ACL.Trustee.Name
-            if(-not $User) {
+            if (-not $User) {
                 $User = $ACL.Trustee.SID
             }
             $Domain = $ACL.Trustee.Domain
-            switch($ACL.AccessMask) {
+            switch ($ACL.AccessMask) {
                 2032127     { $Perm = "Full Control" }
                 1179785     { $Perm = "Read" }
                 1180063     { $Perm = "Read, Write" }
@@ -68,42 +68,42 @@ Function Get-SharePermission($ShareName) {
                 268435456   { $Perm = "FullControl (Sub Only)" }
                 default     { $Perm = "Unknown" }
             }
-            $obj = $obj + "$Domain\$user | $Perm<br>"
+            $Obj = $Obj + "$Domain\$user | $Perm<br>"
         }
     }
     else {
-        $obj = " ERROR: cannot enumerate share permissions. "
+        $Obj = " ERROR: cannot enumerate share permissions. "
     }
-    Return $obj
+    return $Obj
 } # End Get-SharePermissions Function
 
-Function Get-NTFSOwner($Path){
+function Get-NTFSOwner ($Path) {
 	try {
 		$ACL = Get-Acl -Path $Path
-		$a = $ACL.Owner.ToString()
-		Return $a
+		$A = $ACL.Owner.ToString()
+		return $A
 	}
 	catch {
-		$a = " NOTE: Do not have access to view permissions. "
-		Return $a
+		$A = " NOTE: Do not have access to view permissions. "
+		return $A
 	}
 } # End Get-NTFSOwner Function
 
-Function Get-NTFSPermission($Path){
+function Get-NTFSPermission ($Path) {
 	try {
 		$ACL = Get-Acl -Path $Path
-		$obj = @()
-		foreach($a in $ACL.Access){
-			$aA = $a.FileSystemRights
-			$aB = $a.AccessControlType
-			$aC = $a.IdentityReference
-			$obj = $obj + "$aC | $aB | $aA <br>"
+		$Obj = @()
+		foreach($A in $ACL.Access){
+			$AA = $A.FileSystemRights
+			$AB = $A.AccessControlType
+			$AC = $A.IdentityReference
+			$Obj = $Obj + "$AC | $AB | $AA <br>"
 		}
-		Return $obj
+		return $Obj
 	}
 	catch {
-		$obj = " NOTE: Do not have access to view permissions. "
-		Return $obj
+		$Obj = " NOTE: Do not have access to view permissions. "
+		return $Obj
 	}
 } # End Get-NTFSPerms Function
 
@@ -118,12 +118,12 @@ function Get-ShareReport {
     $z = $z + "TD{border-width: 1px;padding: 4px;border-style: solid;border-color: black;font-size:12px}"
     $z = $z + "</style></head><body>"
     $z = $z + "<H3>Share Report for $ComputerName</H3>"
-    $z = $z + "<H4>Report Ran on:  $CheckDate</H4>"
+    $z = $z + "<H4>Report Ran on: $CheckDate</H4>"
     $z = $z + "<table><colgroup><col/><col/><col/><col/><col/><col/></colgroup>"
     $z = $z + "<tr><th>Share Name</th><th>Location</th><th>NTFS Permissions<br>User Identity | Access Control | Rights</th><th>NTFS Owner</th><th>Share Permissions<br>User Identity | Rights</th><th>Share Description</th></tr>"
 
-    $MainShares = Get-WmiObject Win32_Share -Filter "type=0"
-    Foreach($MainShare in $MainShares) {
+    $MainShares = Get-WmiObject -Class Win32_Share -Filter "type=0"
+    foreach ($MainShare in $MainShares) {
         $MainShareName = $MainShare.Name
         $MainLocation = $MainShare.Path
         $MainNTFSPermissions = Get-NTFSPermission -Path $MainLocation
@@ -131,13 +131,13 @@ function Get-ShareReport {
         $MainSharePermissions = Get-SharePermission -ShareName $MainShareName
         $MainShareDescription = $MainShare.Description
 
-        $z = $z + "<tr><td>$MainShareName</td><td>$MainLocation</td><td>$MainNTFSPermissions</td><td>$MainNTFSOwner</td><td>$MainSharePermissions</td><td>$MainShareDescription</td></tr>"
+        $Z = $Z + "<tr><td>$MainShareName</td><td>$MainLocation</td><td>$MainNTFSPermissions</td><td>$MainNTFSOwner</td><td>$MainSharePermissions</td><td>$MainShareDescription</td></tr>"
     }
-    $z = $z + "</table></body></html>"
+    $z = $Z + "</table></body></html>"
     $OutFileName = $ComputerName + "-ShareReport.html"
-    Out-File -FilePath "$Path\$ComputerName\$OutFileName" -InputObject $z -Encoding ASCII
+    Out-File -FilePath "$Path\$ComputerName\$OutFileName" -InputObject $Z -Encoding ASCII
 
-    if (-not (Test-Path -Path "$Path\$ComputerName\$OutFileName" -PathType Leaf)){
+    if (-not (Test-Path -Path "$Path\$ComputerName\$OutFileName" -PathType 'Leaf')){
         Write-Error -Message 'Share Permissions Export Failed. Output file not found.'
     }
 } # End Get-ShareReport Function
@@ -160,15 +160,15 @@ function Get-WindowsUpdate {
         http://blogs.technet.com/b/tmintner/archive/2006/07/07/440729.aspx
         http://www.gfi.com/blog/windows-powershell-extracting-strings-using-regular-expressions/
     #>
-    $wu = New-Object -ComObject "Microsoft.Update.Searcher"
-    $totalupdates = $wu.GetTotalHistoryCount()
-    $all = $wu.QueryHistory(0,$totalupdates)
+    $WU = New-Object -ComObject "Microsoft.Update.Searcher"
+    $TotalUpdates = $WU.GetTotalHistoryCount()
+    $All = $WU.QueryHistory(0,$totalupdates)
 
-    $all | ForEach-Object {
+    $All | ForEach-Object {
         $Title = $_.title
         $KB = [regex]::match($Title,'(KB\w+)').Groups[1].Value
         $Result = $null
-        Switch ($_.ResultCode)
+        switch ($_.ResultCode)
         {
             0 { $Result = 'NotStarted' }
             1 { $Result = 'InProgress' }
@@ -193,7 +193,7 @@ function Get-WindowsUpdate {
     ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
     Out-File -FilePath "$Path\$ComputerName\$ComputerName-Updates.csv" -Append
 
-    if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-Updates.csv" -PathType Leaf)){
+    if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-Updates.csv" -PathType 'Leaf')){
         Write-Error -Message 'Windows Update Export Failed. Output file not found.'
     }
 } # End Get-WindowsUpdate Function
@@ -204,7 +204,7 @@ function ConvertFrom-NetStatus {
         $Value
     )
 
-    $statushash = @{
+    $StatusHash = @{
         [uint16]0 = "Disconnected"
         [uint16]1 = "Connecting"
         [uint16]2 = "Connected"
@@ -220,20 +220,20 @@ function ConvertFrom-NetStatus {
         [uint16]12 = "Credentials Required"
     }
 
-    if ($statushash.ContainsKey($Value)) {
-        $newValue = $statusHash[$Value]
+    if ($StatusHash.ContainsKey($Value)) {
+        $NewValue = $StatusHash[$Value]
     }
     else {
-        $newValue = 'Unknown Network Connection Status'
+        $NewValue = 'Unknown Network Connection Status'
     }
-    return $newValue
+    return $NewValue
 } # End ConvertFrom-NetStatus Function
 
-Function Get-Netstat
+function Get-Netstat
 {
-    netstat -ano | select-object -skip 4 |
+    netstat -ano | Select-Object -skip 4 |
     ForEach-Object {
-        $temp = ($_).Trim() -split "\s+"
+        $Temp = ($_).Trim() -split "\s+"
         New-Object PSObject -Property @{
             Protocol         = $Temp[0]
             Local_Address    = $Temp[1]
@@ -294,7 +294,7 @@ function Get-FirewallRule {
     )
 
     # If no switches are set the script will default to local firewall rules
-    if (!($Local) -and !($Gpo)) {
+    if ((-not $Local) -and (-not $Gpo)) {
         $Local = $true
     }
 
@@ -302,13 +302,11 @@ function Get-FirewallRule {
     if ($Local) {$RegistryKeys += 'Registry::HKLM\System\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\FirewallRules'}
     if ($GPO) {$RegistryKeys += 'Registry::HKLM\Software\Policies\Microsoft\WindowsFirewall\FirewallRules'}
 
-    Foreach ($Key in $RegistryKeys) {
+    foreach ($Key in $RegistryKeys) {
         if (Test-Path -Path $Key) {
             (Get-ItemProperty -Path $Key).PSObject.Members |
             Where-Object {(@('PSPath','PSParentPath','PSChildName') -notcontains $_.Name) -and ($_.MemberType -eq 'NoteProperty') -and ($_.TypeNameOfValue -eq 'System.String')} |
             ForEach-Object {
-
-                # Prepare hashtable
                 $HashProps = @{
                     NameOfRule = $_.Name
                     RuleVersion = ($_.Value -split '\|')[0]
@@ -338,12 +336,13 @@ function Get-FirewallRule {
                 # Determine if this is a local or a group policy rule and display this in the hashtable
                 if ($Key -match 'HKLM\\System\\CurrentControlSet') {
                     $HashProps.RuleType = 'Local'
-                } else {
+                }
+                else {
                     $HashProps.RuleType = 'GPO'
                 }
 
                 # Iterate through the value of the registry key and fill PSObject with the relevant data
-                ForEach ($FireWallRule in ($_.Value -split '\|')) {
+                foreach ($FireWallRule in ($_.Value -split '\|')) {
                     switch (($FireWallRule -split '=')[0]) {
                         'Action' {$HashProps.Action = ($FireWallRule -split '=')[1]}
                         'Active' {$HashProps.Active = ($FireWallRule -split '=')[1]}
@@ -366,7 +365,7 @@ function Get-FirewallRule {
                         'ICMP4' {$HashProps.ICMP4 = ($FireWallRule -split '=')[1]}
                         'LPort2_10' {$HashProps.LPort2_10 = ($FireWallRule -split '=')[1]}
                         'RPort2_10' {$HashProps.RPort2_10 = ($FireWallRule -split '=')[1]}
-                        Default {}
+                        default {}
                     }
                 }
                 # Create and output object using the properties defined in the hashtable
@@ -380,15 +379,15 @@ $ComputerName = $env:COMPUTERNAME
 
 if (-not $Path) {
     if (-not $PSScriptRoot) {
-        $PSScriptRoot = Split-Path $MyInvocation.MyCommand.Path -Parent
+        $PSScriptRoot = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
     }
     $Path = $PSScriptRoot
 }
 
 #region Check Administrator Privileges
-$currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
-if ($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    $isAdmin = $true
+$CurrentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+if ($CurrentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    $IsAdmin = $true
 }
 else {
     Write-Error -Message 'Administrator privileges are required to run this script.'
@@ -398,35 +397,35 @@ else {
 #endregion Check Administrator Privileges
 
 #region Create Folders
-if(-not (Test-Path "$Path\$ComputerName")) {
-    New-Item -Path "$Path\$ComputerName" -ItemType Directory | out-null
+if (-not (Test-Path "$Path\$ComputerName")) {
+    $null = New-Item -Path "$Path\$ComputerName" -ItemType 'Directory'
 }
 #endregion Create Folders
 
 #region Check Security Policy
-if ($isAdmin) {
+if ($IsAdmin) {
 	Export-SecurityPolicy
 }
 else {
     Write-Output "Administrator Rights not provided. Security and Group Policy settings cannot be exported." |
-        Out-File -FilePath "$Path\$ComputerName\secpol-NotExported.txt"
+        Out-File -FilePath "$Path\$ComputerName\secpol-NotExported.txt" -Encoding 'ascii'
 }
 #endregion Check Security Policy
 
 #region Check Users
 Write-Output "Exporting User List - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 $Obj = @()
-$now = Get-Date
+$Now = Get-Date
 
-$AllLocalAccounts = Get-WmiObject -Class Win32_UserAccount -Namespace "root\cimv2" -Filter "LocalAccount='$True'" -ErrorAction Stop
+$AllLocalAccounts = Get-WmiObject -Class Win32_UserAccount -Namespace "root\cimv2" -Filter "LocalAccount='$True'" -ErrorAction 'Stop'
 
 $AllLocalAccounts | ForEach-Object {
-    $user = ([adsi]"WinNT://$ComputerName/$($_.Name),user")
-    $pwAge    = $user.PasswordAge.Value
-    $maxPwAge = $user.MaxPasswordAge.Value
-    $pwLastSet = $now.AddSeconds(-$pwAge)
+    $User = ([adsi]"WinNT://$ComputerName/$($_.Name),user")
+    $PwAge    = $User.PasswordAge.Value
+    $MaxPwAge = $User.MaxPasswordAge.Value
+    $PwLastSet = $now.AddSeconds(-$PwAge)
 
-    New-Object -TypeName PSObject -Property @{
+    New-Object -TypeName 'PSObject' -Property @{
         'Name'                 = $_.Name
         'Full Name'            = $_.FullName
         'Disabled'             = $_.Disabled
@@ -434,18 +433,18 @@ $AllLocalAccounts | ForEach-Object {
         'Status'               = $_.Status
         'LockOut'              = $_.LockOut
         'Password Expires'     = $_.PasswordExpires
-        'Password Last Set'    = $pwLastSet
-        'Password Expiry Date' = $now.AddSeconds($maxPwAge - $pwAge)
+        'Password Last Set'    = $PwLastSet
+        'Password Expiry Date' = $Now.AddSeconds($MaxPwAge - $PwAge)
         'Password Required'    = $_.PasswordRequired
         'Account Type'         = $_.AccountType
         'Domain'               = $_.Domain
-        'Password Age'         = ($now - $pwLastSet).Days
+        'Password Age'         = ($Now - $PwLastSet).Days
     }
 } | Select-Object 'Name','Full Name','Disabled','Description','Status','LockOut','Password Expires','Password Last Set','Password Expiry Date',
     'Password Required','Account Type','Domain','Password Age' | ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
-    Out-File -FilePath "$Path\$ComputerName\$ComputerName-Users.csv" -Append
+    Out-File -FilePath "$Path\$ComputerName\$ComputerName-Users.csv" -Append -Encoding 'ascii'
 
-if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-Users.csv" -PathType Leaf)){
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-Users.csv" -PathType 'Leaf')){
     Write-Error -Message 'User List Export Failed. Output file not found.'
 }
 #endregion Check Users
@@ -456,35 +455,35 @@ Write-Output "Exporting Group List - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 $GroupList = Get-WmiObject -Class Win32_Group -Filter "Domain='$ComputerName'"
 $GroupList | ForEach-Object {
     $CurrGroup = Get-WmiObject -Query "SELECT * FROM Win32_GroupUser WHERE GroupComponent=`"Win32_Group.Domain='$ComputerName',Name='$($_.Name)'`""
-    ForEach ($item in $CurrGroup) {
-        $currentPart = $item.PartComponent
+    foreach ($Item in $CurrGroup) {
+        $CurrentPart = $item.PartComponent
         if ($currentPart) {
-            $UserName = $currentPart.split('=')[2] -replace '"', ''
-            $Domain = $currentPart.split('=')[1].split(',')[0] -replace '"', ''
-            $UserType = $currentPart.split(':')[1].split('.')[0].split('_')[1]
-            $comboName = "$Domain\$UserName"
+            $UserName = $CurrentPart.split('=')[2] -replace '"', ''
+            $Domain = $CurrentPart.split('=')[1].split(',')[0] -replace '"', ''
+            $UserType = $CurrentPart.split(':')[1].split('.')[0].split('_')[1]
+            $ComboName = "$Domain\$UserName"
         }
         else {
             $UserName = $null
             $Domain = $null
             $UserType = $null
-            $comboName = $null
+            $ComboName = $null
         }
         New-Object -TypeName PSObject -Property @{
-            'Name'          = $comboName
+            'Name'          = $ComboName
             'ObjectClass'   = $UserType
             'Group'         = $_.Name
             'GroupSID'      = $_.SID
             'Computer'      = $ComputerName
         }
-       $UserName = $null
-       $Domain = $null
-       $UserType = $null
+        $UserName = $null
+        $Domain = $null
+        $UserType = $null
     }
 } | Select-Object 'Name','ObjectClass','Group','Computer' | ConvertTo-Csv -NoTypeInformation -Delimiter '|' |
-    ForEach-Object { $_ -replace '"', '' } | Out-File -FilePath "$Path\$ComputerName\$ComputerName-Groups.csv" -Append
+    ForEach-Object { $_ -replace '"', '' } | Out-File -FilePath "$Path\$ComputerName\$ComputerName-Groups.csv" -Append -Encoding 'ascii'
 
-if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-Groups.csv" -PathType Leaf)){
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-Groups.csv" -PathType 'Leaf')){
     Write-Error -Message 'Group List Failed. Output file not found.'
 }
 #endregion Check Groups
@@ -494,9 +493,9 @@ Write-Output "Exporting Services - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 Get-WmiObject -Class Win32_Service | Select-Object PSComputerName,Name, Caption, DisplayName, Description,
     ServiceType, StartMode,State, StartName, Status, AcceptPause, AcceptStop, PathName |
     Sort-Object State, DisplayName | ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
-    Out-File -FilePath "$Path\$ComputerName\$ComputerName-Services.csv" -Append
+    Out-File -FilePath "$Path\$ComputerName\$ComputerName-Services.csv" -Append -Encoding 'ascii'
 
-if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-Services.csv" -PathType Leaf)){
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-Services.csv" -PathType 'Leaf')){
     Write-Error -Message 'Services Export Failed. Output file not found.'
 }
 #endregion Check Services
@@ -505,9 +504,9 @@ if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-Services.csv" -Path
 Write-Output "Exporting Running Processes - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 Get-WmiObject -Class Win32_Process | Select-Object Name,ProcessId,ExecutablePath,Description,CommandLine |
     ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
-    Out-File -FilePath "$Path\$ComputerName\$ComputerName-processes.csv" -Append
+    Out-File -FilePath "$Path\$ComputerName\$ComputerName-processes.csv" -Append -Encoding 'ascii'
 
-if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-processes.csv" -PathType Leaf)){
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-processes.csv" -PathType 'Leaf')){
     Write-Error -Message 'Running Processes Export Failed. Output file not found.'
 }
 #endregion Check Running Processes
@@ -520,9 +519,9 @@ $SoftwareList | ForEach-Object { $_.PSParentPath = [string]$_.PSParentPath.Split
 $SoftwareList | Select-Object PSChildName,DisplayName,Publisher,DisplayVersion,UninstallString,PSParentPath |
     Sort-Object DisplayName | ConvertTo-Csv -NoTypeInformation -Delimiter '|' |
     ForEach-Object { $_ -replace '"', ''} |
-    Out-File -FilePath "$Path\$ComputerName\$ComputerName-InstalledSoftware.csv" -Append
+    Out-File -FilePath "$Path\$ComputerName\$ComputerName-InstalledSoftware.csv" -Append -Encoding 'ascii'
 
-if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-InstalledSoftware.csv" -PathType Leaf)){
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-InstalledSoftware.csv" -PathType 'Leaf')){
     Write-Error -Message 'Installed Software Export Failed. Output file not found.'
 }
 #endregion Check for installed software at system level
@@ -539,85 +538,85 @@ Get-ShareReport
 
 #region Check PowerShell Version
 Write-Output "Exporting PowerShell Version Information - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -Encoding utf8
-Write-Output "PowerShell Version Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -Encoding utf8
-Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -Encoding utf8
-$PSVersionTable | Out-File -FilePath "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -Encoding 'ascii'
+Write-Output "PowerShell Version Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -Encoding 'ascii'
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -Encoding 'ascii'
+$PSVersionTable | Out-File -FilePath "$Path\$ComputerName\$ComputerName-PSInfo.txt" -Append -Encoding 'ascii'
 
-if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-PSInfo.txt" -PathType Leaf)){
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-PSInfo.txt" -PathType 'Leaf')){
     Write-Error -Message 'PowerShell Version Export Failed. Output file not found.'
 }
 #endregion Check PowerShell Version
 
 #region Check System Information
 Write-Output "Exporting System Information - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output "Computer System Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
+Write-Output "Computer System Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
 Get-WmiObject -Class Win32_ComputerSystem | Select-Object Name, Model,
     Manufacturer, Description, DNSHostName, Domain, DomainRole, PartOfDomain,
     NumberOfProcessors, SystemType, TotalPhysicalMemory, UserName, Workgroup |
-    Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+    Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
 
-if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType Leaf)){
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType 'Leaf')){
     Write-Error -Message 'System Information Export Failed. Output file not found.'
 }
 #endregion Check System Information
 
 #region Get OperatingSystem info
 Write-Output "Exporting Operating System Information - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output "Operating System Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
+Write-Output "Operating System Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
 Get-WmiObject -Class Win32_OperatingSystem | Select-Object Name, Version, FreePhysicalMemory,
     OSLanguage, OSProductSuite, OSType, OSArchitecture, BuildNumber, Caption, InstallDate,
     LastBootUpTime, LocalDateTime, SystemDrive, WindowsDirectory, SystemDirectory,
     ServicePackMajorVersion, ServicePackMinorVersion, RegisteredUser |
-    Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+    Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
 
-if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType Leaf)){
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType 'Leaf')){
     Write-Error -Message 'System Information Export Failed. Output file not found.'
 }
 #endregion Get OperatingSystem info
 
 #region Get Network Login info
 Write-Output "Exporting Network Login Information - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output "Network Login Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
+Write-Output "Network Login Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
 Get-WmiObject -Class Win32_NetworkLoginProfile | Select-Object PSComputerName, Name, Caption,
     Description, FullName, HomeDirectory, HomeDirectoryDrive, LastLogon, LogonHours,
     LogonServer, PasswordExpires, PrimaryGroupID, UserType |
-    Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+    Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
 
-if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType Leaf)){
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType 'Leaf')){
     Write-Error -Message 'Network Login Export Failed. Output file not found.'
 }
 #endregion Get Network Login info
 
 #region Get Network Connections info
 Write-Output "Exporting Network Adapter Information - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output "Network Connections Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-$networkadapter = Get-WmiObject -Class Win32_NetworkAdapter | Select-Object PSComputerName,
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
+Write-Output "Network Connections Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
+$NetworkAdapter = Get-WmiObject -Class Win32_NetworkAdapter | Select-Object PSComputerName,
     Availability, Name, AdapterType, Description, Installed, MACAddress, Manufacturer,
     NetConnectionID, @{Name='NetConnectionStatus';Expression={(ConvertFrom-NetStatus($_.NetConnectionStatus))}}, NetEnabled, PhysicalAdapter,
     ProductName, ServiceName, TimeOfLastRest
-$networkconfig = Get-WmiObject -Class Win32_NetworkAdapterConfiguration |
+$NetworkConfig = Get-WmiObject -Class Win32_NetworkAdapterConfiguration |
     Select-Object DHCPEnabled, DHCPLeaseObtained, DHCPLeaseExpires, DHCPServer, DNSDomain,
     DNSDomainSuffixSearchOrder, DNSEnabledForWINSResolution, DNSHostName, DNSServerSearchOrder,
     DomainDNSRegistrationEnabled, FullDNSRegistrationEnabled, IPAddress, IPEnabled,
     IPFilterSecurityEnabled, WINSEnableLMHostsLookup, WINSHostLookupFile, WINSPrimaryServer,
     WINSSecondaryServer, DefaultIPGateway, IPSubnet
-$na = $networkadapter.getenumerator()
-$nc = $networkconfig.getenumerator()
+$NA = $NetworkAdapter.getenumerator()
+$NC = $NetworkConfig.getenumerator()
 
-while($na.MoveNext() -and $nc.MoveNext()){
-    Write-Output $na.current $nc.current | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+while($NA.MoveNext() -and $NC.MoveNext()){
+    Write-Output $NA.current $NC.current | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
 }
 
-if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType Leaf)){
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType 'Leaf')){
     Write-Error -Message 'Network Connections Export Failed. Output file not found.'
 }
 
@@ -625,59 +624,59 @@ Write-Output "Exporting Open TCP/UDP Connections - $(Get-Date -Format 'yyyy-MM-d
 Get-Netstat | ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
     Out-File -FilePath "$Path\$ComputerName\$ComputerName-Netstat.csv" -Append
 
-if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-Netstat.csv" -PathType Leaf)){
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-Netstat.csv" -PathType 'Leaf')){
     Write-Error -Message 'Netstat Export Failed. Output file not found.'
 }
 #endregion Get Network Connections info
 
 #region Get PhysicalMemory info
 Write-Output "Exporting Memory Information - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output "Memory Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
+Write-Output "Memory Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
 Get-WmiObject -Class Win32_PhysicalMemory | Select-Object Name, Capacity, DeviceLocator, Tag |
-    Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+    Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
 
-if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType Leaf)){
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType 'Leaf')){
     Write-Error -Message 'Memory Information Export Failed. Output file not found.'
 }
 #endregion Get PhysicalMemory info
 
 #region Get LogicalDisk info
 Write-Output "Exporting Logical Disk Information - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output "Logical Disk Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
+Write-Output "Logical Disk Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
 Get-WmiObject -Class Win32_LogicalDisk | Select-Object Name, ProviderName, Description, FreeSpace, Size |
-    Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+    Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
 
-if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType Leaf)){
+if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType 'Leaf')){
     Write-Error -Message 'Logical Disk Information Export Failed. Output file not found.'
 }
 #endregion Get LogicalDisk info
 
 #region Get Remote Desktop Status
 Write-Output "Exporting RDP Information - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output "RDP Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
-Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
+Write-Output "RDP Information" | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
+Write-Output ("="*80) | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
 
-$rdpGPO = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services' -Name 'fDenyTSConnections' -ErrorAction SilentlyContinue)
-if ($rdpGPO) {
-    if ($rdpGPO.fDenyTSConnections -eq 1) {
-        Write-Output 'Remote Desktop is disabled by Group Policy' | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+$RdpGPO = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services' -Name 'fDenyTSConnections' -ErrorAction 'SilentlyContinue')
+if ($RdpGPO) {
+    if ($RdpGPO.fDenyTSConnections -eq 1) {
+        Write-Output 'Remote Desktop is disabled by Group Policy' | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
     }
-    elseif ($rdpGPO.fDenyTSConnections -eq 0) {
-        Write-Output 'Remote Desktop is enabled by Group Policy' | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+    elseif ($RdpGPO.fDenyTSConnections -eq 0) {
+        Write-Output 'Remote Desktop is enabled by Group Policy' | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
     }
 }
 else {
-    Write-Output 'Remote Desktop is not configured by Group Policy' | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+    Write-Output 'Remote Desktop is not configured by Group Policy' | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
     if (((Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server' -Name 'fDenyTSConnections').fDenyTSConnections) -eq 1) {
-        Write-Output 'Remote Desktop is disabled in registry' | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+        Write-Output 'Remote Desktop is disabled in registry' | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
     }
     else {
-        Write-Output 'Remote Desktop is enabled in registry' | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding utf8
+        Write-Output 'Remote Desktop is enabled in registry' | Out-File -FilePath "$Path\$ComputerName\$ComputerName-sysinfo.txt" -Append -Encoding 'ascii'
     }
 }
 if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathType Leaf)){
@@ -687,12 +686,12 @@ if (-not (Test-Path -Path "$Path\$ComputerName\$ComputerName-sysinfo.txt" -PathT
 
 #region Get Firewall Settings
 Write-Output "Exporting Firewall Information - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-if (-not (Test-Path "$Path\$ComputerName\Firewall")) {
-    New-Item -Path "$Path\$ComputerName\Firewall" -ItemType Directory | Out-Null
+if (-not (Test-Path "$Path\$ComputerName\Firewall" -PathType 'Container')) {
+    $null = New-Item -Path "$Path\$ComputerName\Firewall" -ItemType 'Directory'
 }
 
 Get-FirewallRule -Local -GPO | ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
-    Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallRules-Registry.csv" -Encoding utf8 -Append
+    Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallRules-Registry.csv" -Encoding 'ascii' -Append
 
 if (-not (Test-Path -Path "$Path\$ComputerName\Firewall\$ComputerName-FirewallRules-Registry.csv" -PathType Leaf)){
     Write-Error -Message 'Firewall Registry Information Export Failed. Output file not found.'
@@ -704,46 +703,46 @@ if ([version]((Get-WmiObject -Class Win32_OperatingSystem -Property Version -Err
         @{Name='Platform';Expression={$_.Platform -join ', '}},
         @{Name='EnforcementStatus';Expression={$_.EnforcementStatus -join ', '}} |
         ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
-        Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallRules.csv" -Encoding utf8 -Append
+        Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallRules.csv" -Encoding 'ascii' -Append
 
     Get-NetFirewallProfile -All -PolicyStore ActiveStore | ConvertTo-Csv -NoTypeInformation -Delimiter '|' |
         ForEach-Object { $_ -replace '"', ''} |
-        Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallProfiles.csv" -Encoding utf8 -Append
+        Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallProfiles.csv" -Encoding 'ascii' -Append
 
     Get-NetFirewallSetting -All -PolicyStore ActiveStore | ConvertTo-Csv -NoTypeInformation -Delimiter '|' |
         ForEach-Object { $_ -replace '"', ''} |
-        Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallSetting.csv" -Encoding utf8 -Append
+        Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallSetting.csv" -Encoding 'ascii' -Append
 
     Get-NetFirewallApplicationFilter -All -PolicyStore ActiveStore | Select-Object InstanceID,Program,AppPath |
         ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
-        Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallAppFilter.csv" -Encoding utf8 -Append
+        Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallAppFilter.csv" -Encoding 'ascii' -Append
 
     Get-NetFirewallSecurityFilter -All -PolicyStore ActiveStore |
         Select-Object InstanceID,Authentication,Encryption,LocalUser,RemoteUser,RemoteMachine |
         ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
-        Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallSecurityFilter.csv" -Encoding utf8 -Append
+        Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallSecurityFilter.csv" -Encoding 'ascii' -Append
 
     Get-NetFirewallServiceFilter -All -PolicyStore ActiveStore | Select-Object InstanceID,Service,ServiceName |
         ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
-        Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallServiceFilter.csv" -Encoding utf8 -Append
+        Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallServiceFilter.csv" -Encoding 'ascii' -Append
 
-    if ($isAdmin) {
+    if ($IsAdmin) {
         Get-NetFirewallPortFilter -All -PolicyStore ActiveStore |
             ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
-            Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallPortFilters.csv" -Encoding utf8 -Append
+            Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallPortFilters.csv" -Encoding 'ascii' -Append
 
         Get-NetFirewallAddressFilter -All -PolicyStore ActiveStore |
             Select-Object InstanceID,LocalAddress,LocalIP,RemoteAddress,RemoteIP |
             ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
-            Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallAddressFilters.csv" -Encoding utf8 -Append
+            Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallAddressFilters.csv" -Encoding 'ascii' -Append
 
         Get-NetFirewallInterfaceFilter -All -PolicyStore ActiveStore | Select-Object InstanceID,InterfaceAlias |
             ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
-            Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallInterfaceFilters.csv" -Encoding utf8 -Append
+            Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallInterfaceFilters.csv" -Encoding 'ascii' -Append
 
         Get-NetFirewallInterfaceTypeFilter -All -PolicyStore ActiveStore | Select-Object InstanceID,InterfaceType |
             ConvertTo-Csv -NoTypeInformation -Delimiter '|' | ForEach-Object { $_ -replace '"', ''} |
-            Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallInterfaceTypeFilters.csv" -Encoding utf8 -Append
+            Out-File -FilePath "$Path\$ComputerName\Firewall\$ComputerName-FirewallInterfaceTypeFilters.csv" -Encoding 'ascii' -Append
     }
     else {
         Write-Output "Administrator Rights not provided. Firewall Port Filters cannot be exported." |
